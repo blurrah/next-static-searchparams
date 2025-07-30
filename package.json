@@ -1,0 +1,21 @@
+{
+  "name": "next-static-searchparams",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "private": true,
+  "scripts": {
+    "build": "turbo build",
+    "dev": "turbo dev",
+    "lint": "turbo lint",
+    "type-check": "turbo type-check",
+    "attw": "turbo attw",
+    "test": "turbo test",
+    "format": "turbo format",
+    "format:fix": "turbo format:fix"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "MIT",
+  "packageManager": "pnpm@10.13.1"
+}

@@ -1,0 +1,54 @@
+{
+    "$schema": "https://turbo.build/schema.json",
+    "globalDependencies": [".env", ".env.local", ".env.development.local"],
+    "globalEnv": ["NPM_TOKEN", "DEPLOYMENT_PROTECTION_BYPASS"],
+    "tasks": {
+      "dev": {
+        "dependsOn": ["^build"],
+        "cache": false
+      },
+      "build": {
+        "dependsOn": ["^build"],
+        "env": [
+          "SEARCHPARAMS_SECRET"
+        ],
+        "inputs": ["$TURBO_DEFAULT$", ".env*"],
+        "outputs": [
+          ".next/**",
+          "!.next/cache/**",
+          "dist/**",
+          ".svelte-kit/**",
+          ".vercel/**"
+        ]
+      },
+      "lint": {
+        "dependsOn": ["^build"]
+      },
+      "type-check": {
+        "dependsOn": ["^build"]
+      },
+      "attw": {
+        "dependsOn": ["^build"]
+      },
+      "test": {
+        "dependsOn": ["^build"]
+      },
+      "start": {
+        "dependsOn": ["^start"]
+      },
+      "test:e2e": {
+        "dependsOn": ["^build", "^start"],
+        "env": ["FLAGS_SECRET"]
+      },
+      "publint": {
+        "dependsOn": ["^build"]
+      },
+      "test:integration": {
+        "dependsOn": ["^build"]
+      },
+      "format": {
+      },
+      "format:fix": {
+      }
+    }
+  }

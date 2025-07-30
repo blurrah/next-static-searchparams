@@ -1,0 +1,80 @@
+{
+	"name": "next-static-searchparams",
+	"version": "0.0.1",
+	"description": "Rewrite Next.js searchparams to static encrypted params",
+	"keywords": [
+		"next.js",
+		"static",
+		"searchparams"
+	],
+	"homepage": "https://github.com/blurrah/next-static-searchparams",
+	"bugs": {
+		"url": "https://github.com/blurrah/next-static-searchparams/issues"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/blurrah/next-static-searchparams.git"
+	},
+	"license": "MIT",
+	"sideEffects": false,
+	"type": "module",
+	"exports": {
+		".": {
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		}
+	},
+	"typesVersions": {
+		"*": {
+			"*": [
+				"dist/*.d.ts",
+				"dist/*.d.cts"
+			]
+		}
+	},
+	"files": [
+		"dist",
+		"CHANGELOG.md"
+	],
+	"scripts": {
+		"attw": "attw --pack .",
+		"build": "tsup",
+		"dev": "tsup --watch --clean=false",
+		"format": "biome check .",
+		"format:fix": "biome check . --write",
+		"eslint": "eslint-runner",
+		"eslint:fix": "eslint-runner --fix",
+		"test": "vitest --run",
+		"test:watch": "vitest",
+		"type-check": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@edge-runtime/cookies": "^6.0.0",
+		"jose": "^6.0.12"
+	},
+	"devDependencies": {
+		"@arethetypeswrong/cli": "0.18.2",
+		"@types/node": "24.1.0",
+		"@types/react": "19.1.9",
+		"@vitejs/plugin-react": "4.7.0",
+		"msw": "2.10.4",
+		"next": "15.4.5",
+		"react": "canary",
+		"tsup": "8.5.0",
+		"typescript": "5.8.3",
+		"vite": "7.0.6",
+		"vitest": "3.2.4"
+	},
+	"peerDependencies": {
+		"@opentelemetry/api": "^1.7.0",
+		"next": "*"
+	},
+	"peerDependenciesMeta": {
+		"next": {
+			"optional": true
+		}
+	},
+	"publishConfig": {
+		"access": "public"
+	}
+}
