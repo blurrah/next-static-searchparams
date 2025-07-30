@@ -63,11 +63,6 @@ export const config = {
 
 export async function middleware(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
-  
-  // Only precompute if there are search parameters
-  if (searchParams.size === 0) {
-    return NextResponse.next();
-  }
 
   // Precompute search params into an encrypted code
   const code = await precomputeSearchParams(
@@ -224,6 +219,132 @@ export async function generateStaticParams() {
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   return children;
+}
+```
+
+### Multiple Pages with Different Parameters
+
+You can handle different search parameters for different pages by structuring your routes accordingly:
+
+```
+app/
+├── [code]/
+│   ├── products/
+│   │   ├── page.tsx              # Products listing: ?category=electronics&sort=price&page=1
+│   │   └── [productCode]/
+│   │       └── page.tsx          # Individual product: ?variant=red&size=large&quantity=2
+│   └── search/
+│       └── page.tsx              # Search results: ?q=laptop&filter=brand&page=1
+├── products/
+│   ├── page.tsx                  # Products without params
+│   └── [slug]/
+│       └── page.tsx              # Individual product without params
+└── search/
+    └── page.tsx                  # Search without params
+```
+
+Configure middleware to handle different parameter patterns:
+
+```ts
+// middleware.ts
+export const config = { 
+  matcher: ['/products', '/products/:slug*', '/search'] 
+};
+
+export async function middleware(request: NextRequest) {
+  const { pathname, searchParams } = request.nextUrl;
+  
+  if (searchParams.size === 0) {
+    return NextResponse.next();
+  }
+
+  let code: string;
+  
+  if (pathname === '/products') {
+    // Products listing parameters: category, sort, page, filters
+    code = await precomputeSearchParams(searchParams, (params) => {
+      const filtered = new URLSearchParams();
+      ['category', 'sort', 'page', 'brand', 'price_min', 'price_max'].forEach(key => {
+        if (params.has(key)) filtered.set(key, params.get(key)!);
+      });
+      return filtered;
+    });
+  } else if (pathname.startsWith('/products/')) {
+    // Individual product parameters: variant, size, color, quantity
+    code = await precomputeSearchParams(searchParams, (params) => {
+      const filtered = new URLSearchParams();
+      ['variant', 'size', 'color', 'quantity'].forEach(key => {
+        if (params.has(key)) filtered.set(key, params.get(key)!);
+      });
+      return filtered;
+    });
+    // Create separate code for product-specific params
+    const slug = pathname.split('/products/')[1];
+    const nextUrl = new URL(`/${code}/products/${slug}`, request.url);
+    return NextResponse.rewrite(nextUrl);
+  } else if (pathname === '/search') {
+    // Search parameters: query, filters, pagination
+    code = await precomputeSearchParams(searchParams, (params) => {
+      const filtered = new URLSearchParams();
+      ['q', 'category', 'sort', 'page', 'brand'].forEach(key => {
+        if (params.has(key)) filtered.set(key, params.get(key)!);
+      });
+      return filtered;
+    });
+  }
+
+  const nextUrl = new URL(`/${code}${pathname}`, request.url);
+  return NextResponse.rewrite(nextUrl);
+}
+```
+
+Then in your pages, decrypt the appropriate parameters:
+
+```tsx
+// app/[code]/products/page.tsx - Products listing
+export default async function ProductsPage({ params }: { params: Promise<{ code: string }> }) {
+  const { code } = await params;
+  const searchParams = await decrypt(code);
+  
+  const category = searchParams.get('category') || 'all';
+  const sort = searchParams.get('sort') || 'name';
+  const page = parseInt(searchParams.get('page') || '1');
+  const brand = searchParams.get('brand');
+  
+  return (
+    <div>
+      <h1>Products - {category}</h1>
+      <p>Sorted by: {sort}, Page: {page}</p>
+      {brand && <p>Brand: {brand}</p>}
+      {/* Product listing component */}
+    </div>
+  );
+}
+```
+
+```tsx
+// app/[code]/products/[productCode]/page.tsx - Individual product
+export default async function ProductPage({ 
+  params 
+}: { 
+  params: Promise<{ code: string; productCode: string }> 
+}) {
+  const { code, productCode } = await params;
+  const searchParams = await decrypt(code);
+  
+  const variant = searchParams.get('variant') || 'default';
+  const size = searchParams.get('size') || 'medium';
+  const quantity = parseInt(searchParams.get('quantity') || '1');
+  
+  return (
+    <div>
+      <h1>Product: {productCode}</h1>
+      <p>Variant: {variant}</p>
+      <p>Size: {size}</p>
+      <p>Quantity: {quantity}</p>
+      {/* Product details component */}
+    </div>
+  );
 }
 ```
 
