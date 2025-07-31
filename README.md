@@ -50,11 +50,11 @@ Create or update your `middleware.ts` file:
 
 ```ts
 import { type NextRequest, NextResponse } from 'next/server';
-import { precomputeSearchParams } from 'next-static-searchparams';
+import { encode } from 'next-static-searchparams';
 
 export const config = { 
   matcher: [
-    // Add paths where you want to precompute search params
+    // Add paths where you want to encode search params
     '/',
     '/products',
     '/search',
@@ -64,8 +64,8 @@ export const config = {
 export async function middleware(request: NextRequest) {
   const searchParams = request.nextUrl.searchParams;
 
-  // Precompute search params into an encrypted code
-  const code = await precomputeSearchParams(
+  // Encode search params into an encrypted code
+  const code = await encode(
     searchParams,
     (params) => params // You can filter/transform params here
   );
@@ -134,7 +134,7 @@ export default async function SearchPage({ params }: { params: Params }) {
 
 ## API Reference
 
-### `precomputeSearchParams(searchParams, parseFunction)`
+### `encode(searchParams, parseFunction)`
 
 Encrypts search parameters into a deterministic string.
 
@@ -146,7 +146,7 @@ Encrypts search parameters into a deterministic string.
 
 **Example:**
 ```ts
-const code = await precomputeSearchParams(
+const code = await encode(
   new URLSearchParams('?q=hello&page=2'),
   (params) => {
     // Only include specific parameters
@@ -183,7 +183,7 @@ You can filter or transform search parameters before encryption:
 
 ```ts
 // middleware.ts
-const code = await precomputeSearchParams(
+const code = await encode(
   searchParams,
   (params) => {
     const filtered = new URLSearchParams();
@@ -262,7 +262,7 @@ export async function middleware(request: NextRequest) {
   
   if (pathname === '/products') {
     // Products listing parameters: category, sort, page, filters
-    code = await precomputeSearchParams(searchParams, (params) => {
+    code = await encode(searchParams, (params) => {
       const filtered = new URLSearchParams();
       ['category', 'sort', 'page', 'brand', 'price_min', 'price_max'].forEach(key => {
         if (params.has(key)) filtered.set(key, params.get(key)!);
@@ -271,7 +271,7 @@ export async function middleware(request: NextRequest) {
     });
   } else if (pathname.startsWith('/products/')) {
     // Individual product parameters: variant, size, color, quantity
-    code = await precomputeSearchParams(searchParams, (params) => {
+    code = await encode(searchParams, (params) => {
       const filtered = new URLSearchParams();
       ['variant', 'size', 'color', 'quantity'].forEach(key => {
         if (params.has(key)) filtered.set(key, params.get(key)!);
@@ -284,7 +284,7 @@ export async function middleware(request: NextRequest) {
     return NextResponse.rewrite(nextUrl);
   } else if (pathname === '/search') {
     // Search parameters: query, filters, pagination
-    code = await precomputeSearchParams(searchParams, (params) => {
+    code = await encode(searchParams, (params) => {
       const filtered = new URLSearchParams();
       ['q', 'category', 'sort', 'page', 'brand'].forEach(key => {
         if (params.has(key)) filtered.set(key, params.get(key)!);
@@ -388,7 +388,7 @@ export function SearchForm() {
 
 ## Comparison with Feature Flags
 
-This library is inspired by the [precompute pattern](https://flags-sdk.dev/frameworks/next/precompute) used in feature flag systems, but adapted for search parameters:
+This library is inspired by the [precompute pattern](https://flags-sdk.dev/frameworks/next/precompute) used in feature flag systems, but adapted for search parameters using an encode/decode pattern:
 
 | Feature Flags | Search Parameters |
 |---------------|-------------------|

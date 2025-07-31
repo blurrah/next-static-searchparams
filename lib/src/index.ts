@@ -2,7 +2,7 @@ import { URLSearchParams } from "node:url";
 import { base64url, CompactSign, compactVerify } from "jose";
 
 /**
- * Precompute the search params to a consistent encrypted base64url encoded string
+ * Encode the search params to a consistent encrypted base64url encoded string
  * This is used in the middleware.ts to rewrite search params into a path param that allows
  * you to statically render/cache pages with search params.
  * 
@@ -16,7 +16,7 @@ import { base64url, CompactSign, compactVerify } from "jose";
  * ```ts
  * // middleware.ts
  * export async function middleware(req: NextRequest) {
- *  const code = precomputeSearchParams(req.nextUrl.searchParams, (params) => params); 
+ *  const code = encodeSearchParams(req.nextUrl.searchParams, (params) => params); 
  * 
  *  const nextUrl = new URL(
  *    `/${code}${request.nextUrl.pathname}`,
@@ -28,11 +28,11 @@ import { base64url, CompactSign, compactVerify } from "jose";
  *
  * 
  * ```
- * @param searchParams - The search params to precompute
+ * @param searchParams - The search params to encode
  * @param parseFunction - The function to parse the search params
- * @returns The precomputed search params
+ * @returns The encoded search params
  */
-export function precomputeSearchParams(
+export function encode(
 	searchParams: URLSearchParams,
 	parseFunction: (params: URLSearchParams) => URLSearchParams,
 ) {
@@ -87,7 +87,7 @@ function serialize(
  * @param code - The code to decrypt
  * @returns The decrypted search params
  */
-export async function decrypt(code: string, secret: string | undefined = process.env.SEARCHPARAMS_SECRET) {
+export async function decode(code: string, secret: string | undefined = process.env.SEARCHPARAMS_SECRET) {
     if (!secret) {
         throw new Error("next-static-searchparams: Can not decrypt due to missing secret");
     }
